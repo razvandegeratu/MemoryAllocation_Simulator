@@ -1,0 +1,86 @@
+313 CA
+Degeratu Razvan-Andrei
+
+Segregated Free Lists
+
+	Ca structura in care sa memorez datele alocate am ales o lista dublu
+inlantuita (desi, ar fi fost identic si cu cea simplu inlantuita).
+	
+Intrucat, lista de blocuri alocate si listele nealocate au structuri diferite,
+am facut functii separate care sa le manipuleze(ex: create,add_node,remove_node, etc)
+in functie de nevoile fiecareia. 
+
+	Structurile folosite:
+> Nod, compusa din pointer catre date, pe care le-am facut sa fie
+  blocuri, nodul anterior si urmator
+> Lista dublu inlantuita care contine head, data_size, numar de noduri,memorie 
+  retinuta de fiecare nod, indexul de pe heap al listei, si tipul de reconstituire
+> Heap, in care am retinut un vector de liste dublu inlantuite,
+  adresa de start, numarul de liste, numarul de malloc-uri, free-uri si
+  fragmentari, si numarul de bytes alocati initial fiecarei liste(folosesc asta
+  doar pentru listele initiale si pentru a calcula memoria totala la dump)
+> Blocuri, in care am retinut numarul de blocuri, adresa, memorie 
+  pentru scriere, bool pentru allocat si scris. blocurile le folosesc ca node->data 
+> Lista de blocuri alocate, in care am retinut head, numarul de noduri, si data_size
+
+	Programul are genericitate deoarece este foarte usor sa se schimbe din stocarea
+stringurilor, in alte tipuri de date.
+
+	Functiile importante sunt: init_heap, my_malloc, dump_memory, destroy_heap,
+write si read.
+
+1. main
+2. init_heap
+3. my_malloc
+4. destroy_heap
+5. write
+6. read
+7. dump_memory
+8. destroy_heap
+	
+	1. In main, am declarat doar ce trebuie accesat de toate ramurile if-urilor
+general, in rest fiecare variabila este declarata inainte de utilizare.
+	La inceputul main-ului am si alocat memorie pentru lista de blocuri alocata.
+	Apoi, citesc comanda si realizez instructiuni pana la citirea comenzii 
+destroy_heap sau citiri/scrieri ilegale, care opresc programul.
+	Pentru fiecare, citesc parametrii necesari si intru in functia respectiva.
+
+	2. init_heap aloca si initializeaza heap-ul, apoi aloca list_count de liste 
+	Pentru fiecare lista o creeaza, o initializeaza, iar node_per_list este invers
+proportional cu indexul listei.
+	Pentru fiecare nod din fiecare lista declara static blocul care va fi in nod
+si o initializeaza cu valorile impuse sau calculate anterior.
+	Adresele sunt construite astfel incat sa se succeada una pe cealalta
+
+	3. my_malloc foloseste booleanul solved pentru a marca alocarea. Daca nu devine
+true, se printeaza mesajul corespunzator. Prin fiecare lista, se cauta un bloc cu 
+numarul necesar de octeti nealocati. Daca se gaseste exact,se scoate blocul de pe
+heap si se adauga in lista de blocuri alocate. Daca se gaseste prima data un bloc
+cu numar mai mare de bytes, atunci este nevoie sa se fragmenteze, proces prin care
+se creeaza si se initializeaza un bloc nou, se cauta lista si pozitia pe care
+trebuie sa o aiba in lista respectiva si se adauga blocul nou, iar cel alocat
+se adauga in lista de blocuri alocate. De asemenea, mereu se scoate de pe listele
+din heap blocul cu index 0 deoarece primul are adresa cea mai mica.
+	La sfarsitul functiei se verifica daca vreo lista a ramas fara noduri pentru a fi
+scoasa din vector
+
+	4. write verifica intai daca exista alocata adresa de la care se incearca
+scrierea. Apoi cauta nodul la care se va incepe scrierea prin functia 
+find_node_in_list, initializeaza o variabila in care retine numarul de bytes
+scrisi, si copiaza memoria atata timp cat inca nu a ajuns la valoarea dorita,
+parcurgand succesiv blocurile in ordinea adreselor si la fiecare iteratie retine
+numarul de bytes ramasi de scris
+
+	5. read printeaza caracter cu caracter valorile gasite la adresele respective
+, pe acelasi principiu cu write, fara alocat de memorie.
+
+	6. dump_memory se foloseste de functii precum check_free_blocks sau
+check_allocated_mem pentru a gasi parametri pe care trebuie sa ii printeze si care
+nu sunt retinuti in structuri. check_allocated_mem parcurge fiecare lista si 
+numara nodurile totale de pe heap. Dupa ce printeaza valori usor de accesat,
+parcurge fiecare lista pentru a afisa adresa si numarul de bytes al fiecarui bloc
+de pe heap. Apoi face acelasi lucru pentru lista de blocuri alocate.
+
+	7. destroy_heap elibereaza intai fiecare nod de pe fiecare lista,
+apoi vectorul de liste, apoi heap-ul. Ulterior, parcurge lista de blocuri alocate
+si elibereaza fiecare bloc, scris sau nu, apoi lista.
